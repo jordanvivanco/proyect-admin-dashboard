@@ -1,26 +1,37 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { Component, Suspense } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import AuthGuard from './guards/auth.guard';
+import { PrivateRoutes, PublicRoutes } from './models/routes';
+import { Admin } from './pages/private/Admin';
+import { Dashboard } from './pages/private/Dashboard';
+import { Home } from './pages/private/Home';
+import { Landing } from './pages/public/Landing';
+import { Login } from './pages/public/Login';
+import "./App.css";
+import { UserProvider } from './context/UserProvider';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+export default class App extends Component {
+  render() {
+    return (
+      <div>
+        <UserProvider>
+          <Suspense fallback={<div>Loading...</div>}>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Navigate to={PrivateRoutes.DASHBOARD} />} />
+                <Route path="*" element={<>Not Found</>} />
+                <Route path={PublicRoutes.LOGIN} element={<Login />} />
+                <Route path={PublicRoutes.LANDING} element={<Landing />} />
+                <Route element={<AuthGuard />}>
+                  <Route path={`${PrivateRoutes.DASHBOARD}/*`} element={<Admin />} />
+                  <Route path={`${PrivateRoutes.HOME}/*`} element={<Home />} />
+                  <Route path={`${PrivateRoutes.ADMIN}/*`} element={<Admin />} />
+                </Route>
+              </Routes>
+            </BrowserRouter>
+          </Suspense>
+        </UserProvider>
+      </div>
+    )
+  }
 }
-
-export default App;
